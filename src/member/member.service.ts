@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { MemberRepository } from './member.repository';
-import { CreateMemberDto } from './member.dto';
+import { CreateMemberDto, UpdateMemberDto } from './member.dto';
 import { Member, MemberType } from '@prisma/client';
 import { BcryptService } from '../bcrypt/bcrypt.service';
 
@@ -22,6 +22,43 @@ export class MemberService {
     data.password = await this.bcryptService.hash(data.password);
     await this.memberRepository.create(data, MemberType.Basic);
     return { message: '회원가입이 완료되었습니다.' };
+  }
+
+  /* 아이디별 회원조회 */
+  async findOneById(id: string): Promise<Member> {
+    return await this.isValidById(id);
+  }
+
+  /* 전체 조회 */
+  async findMany(): Promise<Member[]> {
+    return await this.memberRepository.findMany();
+  }
+
+  /* 회원정보 수정 */
+  async update(id: string, data: UpdateMemberDto): Promise<IMessage> {
+    await this.isValidById(id);
+    await this.existNickname(data.name);
+    await this.existTel(data.tel);
+    await this.memberRepository.update(id, data);
+    return { message: '회원의 정보가 수정되었습니다.' };
+  }
+
+  /* 패스워드 수정 */
+  async updatePassword(id: string, oldPassword: string, newPassword: string): Promise<IMessage> {
+    const member = await this.isValidById(id);
+    const PasswordMatch = await this.bcryptService.compare(oldPassword, member.password);
+    if (!PasswordMatch) throw new ConflictException('패스워드가 일치하지 않습니다.');
+
+    const hashPassword = await this.bcryptService.hash(newPassword);
+    await this.memberRepository.updatePassword(id, hashPassword);
+    return { message: '패스워드가 성공적으로 변경되었습니다.' };
+  }
+
+  /* 회원삭제 */
+  async delete(id: string): Promise<IMessage> {
+    await this.isValidById(id);
+    await this.memberRepository.softDelete(id);
+    return { message: '회원삭제가 완료되었습니다.' };
   }
 
   /* 닉네임 중복검증 */

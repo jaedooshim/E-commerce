@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMemberDto } from './member.dto';
+import { CreateMemberDto, UpdateMemberDto } from './member.dto';
 import { Member, MemberType, Prisma } from '@prisma/client';
 
 @Injectable()
@@ -11,6 +11,23 @@ export class MemberRepository {
   /* 회원가입 */
   async create(data: CreateMemberDto, type: MemberType): Promise<Member> {
     return this.memberRepository.create({ data: { ...data, type } });
+  }
+
+  /* 회원정보 수정 */
+  async update(id: string, data: UpdateMemberDto): Promise<Member> {
+    return this.memberRepository.update({ where: { id }, data });
+  }
+
+  /* 패스워드 수정 */
+  async updatePassword(id: string, newPassword: string) {
+    const member = await this.findById(id);
+    member.password = newPassword;
+    await this.memberRepository.update({ where: { id }, data: { password: newPassword } });
+  }
+
+  /* 회원삭제 */
+  async softDelete(id: string): Promise<Member> {
+    return this.memberRepository.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   /* 이름 찾기 */
@@ -36,5 +53,10 @@ export class MemberRepository {
   /* ID 찾기 */
   async findById(id: string): Promise<Member | null> {
     return this.memberRepository.findFirst({ where: { id, deletedAt: null } });
+  }
+
+  /* 전체 찾기 */
+  async findMany(): Promise<Member[]> {
+    return this.memberRepository.findMany({ where: { deletedAt: null } });
   }
 }
