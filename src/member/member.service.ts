@@ -3,10 +3,8 @@ import { MemberRepository } from './member.repository';
 import { CreateMemberDto, UpdateMemberDto } from './member.dto';
 import { Member, MemberType } from '@prisma/client';
 import { BcryptService } from '../bcrypt/bcrypt.service';
+import { IMessage } from '../_common/interface/message.interface';
 
-export interface IMessage {
-  message: string;
-}
 @Injectable()
 export class MemberService {
   constructor(
@@ -61,6 +59,14 @@ export class MemberService {
     return { message: '회원삭제가 완료되었습니다.' };
   }
 
+  /* 회원 탈퇴 */
+  async deleteSelf(id: string, password: string): Promise<IMessage> {
+    await this.isValidById(id);
+    await this.isValidPassword(id, password);
+    await this.memberRepository.deleteMember(id);
+    return { message: '회원탈퇴가 완료되었습니다.' };
+  }
+
   /* 닉네임 중복검증 */
   async existNickname(nickname: string): Promise<void> {
     const member = await this.memberRepository.findByNickname(nickname);
@@ -91,5 +97,13 @@ export class MemberService {
     const member = await this.memberRepository.findById(id);
     if (!member) throw new NotFoundException('해당하는 회원은 존재하지 않습니다.');
     return member;
+  }
+
+  /* 비밀번호 검증 */
+  async isValidPassword(id: string, password: string): Promise<void> {
+    const member = await this.isValidById(id);
+    const passwordValid = await this.bcryptService.compare(password, member.password);
+    console.log(password, member.password);
+    if (!passwordValid) throw new ConflictException('비밀번호가 일치하지 않습니다.');
   }
 }

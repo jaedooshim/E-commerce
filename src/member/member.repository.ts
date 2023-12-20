@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMemberDto, UpdateMemberDto } from './member.dto';
-import { Member, MemberType, Prisma } from '@prisma/client';
+import { Member, MemberType } from '@prisma/client';
 
 @Injectable()
 export class MemberRepository {
@@ -27,6 +27,11 @@ export class MemberRepository {
 
   /* 회원삭제 */
   async softDelete(id: string): Promise<Member> {
+    return this.memberRepository.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+
+  /* 회원 탈퇴 */
+  async deleteMember(id: string): Promise<Member> {
     return this.memberRepository.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
