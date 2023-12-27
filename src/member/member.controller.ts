@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { MemberService } from './member.service';
 import { CreateMemberDto, UpdateMemberDto } from './member.dto';
@@ -40,7 +40,7 @@ export class MemberController {
   }
 
   /* 패스워드 수정 */
-  @Put('password')
+  @Patch('password')
   @UseGuards(AuthUserGuard)
   async updatePassword(@Auth() user: IPayload, @Body() password: IPassword): Promise<IMessage> {
     return await this.memberservice.updatePassword(user.id, password.oldPassword, password.newPassword);
