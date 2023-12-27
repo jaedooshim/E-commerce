@@ -65,13 +65,6 @@ export class UpdateMemberDto {
 
   @IsNotEmpty()
   @IsString()
-  @MaxLength(16)
-  @MinLength(8)
-  @Matches(/^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+])/)
-  password: string;
-
-  @IsNotEmpty()
-  @IsString()
   @MaxLength(13)
   @Matches(/^01(?:0|1|[6-9])-(?:\d{3}|\d{4})-\d{4}$/)
   tel: string;
