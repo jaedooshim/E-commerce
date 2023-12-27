@@ -4,12 +4,14 @@ import { CreateMemberDto, UpdateMemberDto } from './member.dto';
 import { Member, MemberType } from '@prisma/client';
 import { BcryptService } from '../bcrypt/bcrypt.service';
 import { IMessage } from '../_common/interface/message.interface';
+import { JwtService } from '../jwt/jwt.service';
 
 @Injectable()
 export class MemberService {
   constructor(
     private memberRepository: MemberRepository,
     private bcryptService: BcryptService,
+    private jwtService: JwtService,
   ) {}
 
   /* 일반 회원가입 */
@@ -33,17 +35,27 @@ export class MemberService {
   }
 
   /* 회원정보 수정 */
-  async update(id: string, data: UpdateMemberDto): Promise<IMessage> {
+  async update(id: string, data: UpdateMemberDto): Promise<{ accessToken: string; message: string }> {
     await this.isValidById(id);
     await this.existNickname(data.name);
     await this.existTel(data.tel);
-    await this.memberRepository.update(id, data);
-    return { message: '회원의 정보가 수정되었습니다.' };
+
+    const updateInfo = await this.memberRepository.update(id, data);
+    const payload = {
+      id: updateInfo.id,
+      name: updateInfo.name,
+      email: updateInfo.email,
+      nickname: updateInfo.nickname,
+      role: updateInfo.role,
+    };
+    const accessToken = this.jwtService.signAccessToken(payload);
+    return { accessToken, message: '회원의 정보가 수정되었습니다.' };
   }
 
   /* 패스워드 수정 */
   async updatePassword(id: string, oldPassword: string, newPassword: string): Promise<IMessage> {
     const member = await this.isValidById(id);
+    console.log(id);
     const PasswordMatch = await this.bcryptService.compare(oldPassword, member.password);
     if (!PasswordMatch) throw new ConflictException('패스워드가 일치하지 않습니다.');
 
