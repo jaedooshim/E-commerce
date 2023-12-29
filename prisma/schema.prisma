@@ -37,8 +37,8 @@ model Member {
 
 model Sales {
   id        String    @id @default(uuid())
-  name      String    @map("sales_name") @db.VarChar(255)
-  desc      String    @map("sales_desc") @db.VarChar(255)
+  name      String    @db.VarChar(255)
+  desc      String    @db.VarChar(255)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -48,9 +48,9 @@ model Sales {
 
 model Product {
   id        String    @id @default(uuid())
-  name      String    @map("product_name") @db.VarChar(255)
-  price     String    @map("product_price") @db.VarChar(255)
-  desc      String    @map("product_desc") @db.VarChar(255)
+  name      String    @db.VarChar(255)
+  price     Decimal   @db.Decimal(11, 2)
+  desc      String    @db.VarChar(255)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
