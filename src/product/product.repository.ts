@@ -13,6 +13,11 @@ export class ProductRepository {
     return this.productRepository.create({ data });
   }
 
+  /* 상품 전체조회 */
+  async findMany(): Promise<Product[]> {
+    return this.productRepository.findMany();
+  }
+
   /* 이름 찾기 */
   async findByName(name: string): Promise<Product | null> {
     return this.productRepository.findFirst({ where: { name, deletedAt: null } });
